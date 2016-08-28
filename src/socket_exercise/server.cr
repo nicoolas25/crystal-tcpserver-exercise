@@ -1,4 +1,5 @@
-require "http/server"
+require "socket"
+require "socket/tcp_server"
 
 module SocketExercise
   class Server
@@ -23,8 +24,13 @@ module SocketExercise
       @stop_channel.receive
     end
 
+    def terminate_handler(handler)
+      handler.wait_stop
+      @connection_handers.delete(handler)
+    end
+
     private def handle_socket(socket : TCPSocket)
-      handler = Handler.new(socket, @logger)
+      handler = Handler.new(self, socket, @logger)
       @connection_handers << handler
       spawn { handler.start }
     end
